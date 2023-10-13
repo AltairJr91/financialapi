@@ -1,36 +1,24 @@
-const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
+function authenticate(req, res, next) {
+  const authHeader = req.headers.authorization;
 
-const login = async (req, res) => {
-    const { email, password } = req.body;
-    const user = await UserModel.findOne({ email })
+  if (!authHeader) {
+    return res.status(401).json({ message: 'Access denied. No token provided.' });
+  }
 
-    try {
-        if (!user) {
-            res.status(400).json({
-                message: "User not found!"
-            })
-        }
-const matchPassword = await bcrypt.compare(password, user.password)
+  const [, token] = authHeader.split(" ")
+  
+  try {
+    const secret = process.env.JWT_SECRET;
+    const decoded = jwt.verify(token, secret);
 
-        if (!matchPassword) {
-            return res.status(401).json({
-                message: "Invalid Password"
-            })
-        }
-        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-            expiresIn: 86400
-          })
-        return res.status(201).json({
-            name: user.name,
-            token:token
-        })
-    } catch (error) {
-        console.log(error);
-    }
+    req.user = decoded;
+    next();
 
-
+  } catch (error) {
+    return res.status(401).json({ message: 'Invalid token.' });
+  }
 }
 
-module.exports = {login} 
+module.exports = { authenticate };
