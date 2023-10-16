@@ -12,7 +12,7 @@ const login = async (req, res) => {
                 message: "User not found!"
             })
         }
-const matchPassword = await bcrypt.compare(password, user.password)
+        const matchPassword = await bcrypt.compare(password, user.password)
 
         if (!matchPassword) {
             return res.status(401).json({
@@ -21,10 +21,10 @@ const matchPassword = await bcrypt.compare(password, user.password)
         }
         const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
             expiresIn: 86400
-          })
+        })
         return res.status(201).json({
             name: user.name,
-            token:token
+            token: token
         })
     } catch (error) {
         console.log(error);
@@ -33,4 +33,4 @@ const matchPassword = await bcrypt.compare(password, user.password)
 
 }
 
-module.exports = {login} 
+module.exports = { login } 

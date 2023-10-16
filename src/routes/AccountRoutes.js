@@ -6,7 +6,7 @@ const { createAccount, accountUpdate, accountTotal } = require('../controllers/A
 const router = express.Router();
 
 router.post('/createaccount', authenticate ,createAccount);
-router.patch('/accountPatch', authenticate ,accountUpdate);
+router.patch('/accountPatch/:id', authenticate ,accountUpdate);
 router.get('/accounttotal', authenticate, accountTotal);
 
 module.exports = router
