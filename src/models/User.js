@@ -17,6 +17,12 @@ const UserSchema = moongose.Schema({
         required: true,
 
     },
+    bankAccounts: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Account',
+        },
+      ],
     createdAt: {
         type: Date,
         default: Date.now
