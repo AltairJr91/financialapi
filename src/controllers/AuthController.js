@@ -5,7 +5,7 @@ const UserModel = require('../models/User')
 const login = async (req, res) => {
     const { email, password } = req.body;
     const user = await UserModel.findOne({ email })
-
+   
     try {
         if (!user) {
             res.status(400).json({
@@ -24,7 +24,8 @@ const login = async (req, res) => {
         })
         return res.status(201).json({
             name: user.name,
-            token: token
+            token: token,
+            id:req.userId
         })
     } catch (error) {
         console.log(error);

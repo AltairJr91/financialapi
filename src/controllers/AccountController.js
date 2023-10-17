@@ -3,17 +3,34 @@ const accountModel = require('../models/Account');
 
 
 
-const accountTotal = async (req, res) => {
-    const accountId = req.params.id;
+const accountListFromUser = async (req, res) => {
+
     try {
-        const account = await accountModel.findById(accountId);
+        const account = await accountModel.find().populate('user');
 
         if (!account) {
-            return res.status(404).json({ error: 'Bank account not found' });
+            res.status(400).json({ message: "Account not found!" })
         }
-        return res.status(200).json({
-            balance: account.balance
-        });
+
+        return res.status(200).json(account);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Server error' });
+    }
+};
+
+const userAccounts = async (req, res) => {
+
+    try {
+        const user = await userModel.findById({ _id: req.userId }).populate('bankAccounts');
+        if (!user) {
+            res.status(400).json({ message: "User not found!" })
+        }
+        if (!user.bankAccounts || user.bankAccounts.length === 0) {
+            return res.status(404).json({ error: 'Bank accounts not found' });
+        }
+
+        return res.status(200).json(user);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: 'Server error' });
@@ -21,33 +38,33 @@ const accountTotal = async (req, res) => {
 };
 
 const accountUpdate = async (req, res) => {
-    const accountId = req.params.id;
-    const { method, value } = req.body;
+    const { method, value, accountId } = req.body;
 
     try {
         const account = await accountModel.findById(accountId);
-
         if (!account) {
             return res.status(404).json({ error: 'Bank account not found' });
-        }
+        };
 
-        async function updateAccount(account) {
-            if (method === 'deposit') {
-                account.balance += value;
-            } else if (method === 'withdraw') {
-                if (account.balance < value) {
-                    return res.status(400).json({ error: 'Insufficient funds' });
-                }
-                account.balance -= value;
-            } else {
-                return res.status(400).json({ error: 'Invalid method' });
+
+        if (method === 'deposit') {
+            account.balance += value;
+        } else if (method === 'withdraw') {
+            if (account.balance < value) {
+                return res.status(400).json({ error: 'Insufficient funds' });
             }
-        }
- 
-        return res.json({
-            balance: updateAccount(account),
-            message: 'Bank balance has been updated successfully'
+            account.balance -= value;
+        } else {
+            return res.status(400).json({ error: 'Invalid method' });
+        };
+
+        await account.save();
+
+        return res.status(200).json({
+            message: "Account updated with success",
+            Account: account
         });
+
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: 'Server error' });
@@ -56,8 +73,9 @@ const accountUpdate = async (req, res) => {
 
 const createAccount = async (req, res) => {
     try {
-        const id = req.params.id;
-        let user = await userModel.findOne({ id });
+        const id = req.userId;
+        let user = await userModel.findById({ _id: id });
+
         if (!user) {
             res.status(400).json({ message: "User not found!" })
         }
@@ -71,8 +89,11 @@ const createAccount = async (req, res) => {
 
         const newBankAccount = await accountModel.create({
             accountNumber: newAccountNumber,
-            user: user._id
+            user: { _id: user.id }
         })
+
+        user.bankAccounts.push(newBankAccount._id);
+        await user.save();
 
         return res.status(201).json({
             message: "Account created with success",
@@ -83,4 +104,4 @@ const createAccount = async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 };
-module.exports = { accountTotal, accountUpdate, createAccount };
+module.exports = { userAccounts, accountUpdate, createAccount, accountListFromUser };

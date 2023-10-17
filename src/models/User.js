@@ -1,7 +1,7 @@
-const moongose = require('../database')
+const mongoose = require('../database')
 const bcrypt = require('bcrypt')
 
-const UserSchema = moongose.Schema({
+const UserSchema = mongoose.Schema({
     name: {
         type: String,
         required: true
@@ -34,6 +34,6 @@ UserSchema.pre("save", async function(next){
     const cryptpassword = await bcrypt.hash(this.password , 8)
     this.password = cryptpassword;
 })
-const User = moongose.model("User",UserSchema)
+const User = mongoose.model("User",UserSchema)
 
 module.exports = User;

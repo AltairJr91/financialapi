@@ -8,12 +8,12 @@ function authenticate(req, res, next) {
   }
 
   const [, token] = authHeader.split(" ")
-  
+
   try {
     const secret = process.env.JWT_SECRET;
     const decoded = jwt.verify(token, secret);
-
-    req.user = decoded;
+    
+    req.userId = decoded.id;
     next();
 
   } catch (error) {
