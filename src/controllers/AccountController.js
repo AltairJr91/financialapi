@@ -104,4 +104,35 @@ const createAccount = async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 };
-module.exports = { userAccounts, accountUpdate, createAccount, accountListFromUser };
+
+const accountSelected = async (req, res) => {
+    const accountId = req.params.id
+    try {
+        const singleAccount = await accountModel.findById({ _id: accountId }).populate('user');
+        if (!singleAccount) {
+            res.status(400).json({ message: "Account not found!" })
+        }
+
+        return res.status(200).json(singleAccount);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Server error' });
+    }
+};
+
+const deleteAccount = async (req, res) => {
+    const accountId = req.params.id
+    try {
+        const deleteAccount = await accountModel.findByIdAndRemove({ _id: accountId })
+        if (!deleteAccount) {
+            res.status(400).json({ message: "Account not found!" })
+        }
+
+        return res.status(200).json(deleteAccount);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Server error' });
+    }
+};
+
+module.exports = { userAccounts, accountUpdate, createAccount, accountListFromUser, accountSelected, deleteAccount };

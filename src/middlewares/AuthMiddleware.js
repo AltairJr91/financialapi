@@ -21,4 +21,7 @@ function authenticate(req, res, next) {
   }
 }
 
+//Space dedicated to new middleware for admins authentication
+
+
 module.exports = { authenticate };
