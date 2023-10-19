@@ -123,12 +123,20 @@ const accountSelected = async (req, res) => {
 const deleteAccount = async (req, res) => {
     const accountId = req.params.id
     try {
-        const deleteAccount = await accountModel.findByIdAndRemove({ _id: accountId })
-        if (!deleteAccount) {
-            res.status(400).json({ message: "Account not found!" })
+        const account = await accountModel.findById(accountId);
+        
+        if (!account) {
+            res.status(400).json({ message: "Account not found!" });
+        } else if (account.balance > 0) {
+            res.status(400).json({ message: "Account has a balance. Cannot delete." });
+        } else {
+            const deleteAccount = await accountModel.findByIdAndRemove(accountId);
+            if (deleteAccount) {
+                res.json({ message: "Account deleted successfully" });
+            } else {
+                res.status(400).json({ message: "Failed to delete the account" });
+            }
         }
-
-        return res.status(200).json(deleteAccount);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: 'Server error' });
